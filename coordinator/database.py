@@ -571,4 +571,5 @@ def db_verify_user_auth(user_id: str, auth_token: str) -> bool:
         return bool(row and row["auth_token"] == auth_token)
     except Exception as e:
         logger.error(f"db_verify_user_auth failed: {e}")
+
         return False
