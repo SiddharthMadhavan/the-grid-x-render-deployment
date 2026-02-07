@@ -61,9 +61,6 @@ from coordinator.credit_manager import (
 )
 from coordinator.scheduler import job_queue, dispatch, watchdog_loop
 
-# Import so WS server runs
-from coordinator.websocket import run_ws
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -501,3 +498,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
