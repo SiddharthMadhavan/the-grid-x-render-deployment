@@ -22,6 +22,8 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi import WebSocket
+from coordinator.websocket import worker_ws
 
 # Import from common module (now properly implemented)
 import sys
@@ -75,21 +77,9 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager"""
-    # Startup
-    logger.info("🚀 Starting Grid-X Coordinator...")
     init_db()
-    logger.info("✅ Database initialized")
-    
+    asyncio.create_task(watchdog_loop())
     yield
-    
-    # Shutdown
-    logger.info("🛑 Shutting down Grid-X Coordinator...")
-    # Close database connections
-    db = get_db()
-    if db:
-        db.close()
-    logger.info("✅ Shutdown complete")
 
 
 # ============================================================================
@@ -114,6 +104,10 @@ app.add_middleware(
 # ============================================================================
 # EXCEPTION HANDLERS
 # ============================================================================
+
+@app.websocket("/ws/worker")
+async def ws_worker(websocket: WebSocket):
+    await worker_ws(websocket)
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -495,7 +489,4 @@ def main() -> None:
         logger.error(f"Fatal error: {e}", exc_info=True)
         raise
 
-
-if __name__ == "__main__":
-    main()
 
